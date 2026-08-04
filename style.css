@@ -245,7 +245,7 @@ nav.scrolled{padding:10px 0;background:rgba(246,241,231,.86);backdrop-filter:blu
 @keyframes vlfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @media(max-width:1000px){.vword{display:none}}
 /* sport tabs — lowered to sit on the hero's lower edge */
-.sport-tabs{position:absolute;left:30%;transform:translateX(-50%);bottom:0px;z-index:3;display:flex;gap:10px}
+.sport-tabs{position:absolute;left:50%;transform:translateX(-50%);bottom:0px;z-index:3;display:flex;gap:10px}
 .sport-tab{
   position:relative;overflow:hidden;
   display:flex;flex-direction:column;align-items:center;gap:5px;
