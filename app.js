@@ -2,6 +2,10 @@
    MATCHARENA — app.js
    Hero 3D arena with per-sport courts + themes, exploded-view
    stages, cart, join form and full UI wiring.
+   
+   ⚠️ IMPORTANT: If your Render URL is different from 
+   https://matcharena-backend-1.onrender.com, change it in the 
+   3 fetch() calls below!
    ============================================================ */
 (() => {
 'use strict';
@@ -300,7 +304,6 @@ buildCourts();
 
 /* ---------------- improved props ---------------- */
 function buildRacket() {
-  /* a real badminton racket: oval head frame, strings, V-throat, shaft, wrapped grip */
   const g = new THREE.Group();
   const frameMat = mat(0x6B5BD6, { roughness: .3, metalness: .5 });
   const strMat = new THREE.MeshBasicMaterial({ map: stringTex, transparent: true, opacity: .6, side: THREE.DoubleSide });
@@ -324,7 +327,6 @@ function buildRacket() {
   return g;
 }
 function buildShuttle() {
-  /* a real shuttlecock: rounded cork cap, 16 feather vanes in a cone, red band */
   const g = new THREE.Group();
   const cork = M(new THREE.SphereGeometry(.085, 16, 12), mat(0xF3E7C4, { roughness: .5 }));
   cork.scale.set(1, .8, 1); cork.position.y = .03;
@@ -366,8 +368,6 @@ function buildPaddle() {
   return g;
 }
 function buildHoop(side) {
-  /* proper basketball geometry: pole planted beyond the baseline,
-     backboard facing the court, rim hanging over the court at the throw line */
   const g = new THREE.Group();
   const poleMat = mat(0xd8d8e2, { roughness: .35, metalness: .5 });
   const boardZ = .36 * side, poleZ = .92 * side;
@@ -446,8 +446,6 @@ heroSports.football = {
   build() {
     const root = new THREE.Group();
     const postMat = mat(0xf5f5f7, { roughness: .3, metalness: .4 });
-    /* goals sit ON the goal lines at z=±3.6 (matching the pitch markings),
-       nets stretched behind the line — proper football geometry */
     const goalAt = z => {
       const goalG = new THREE.Group(); goalG.position.set(0, 0, z);
       if (z < 0) goalG.rotation.y = Math.PI;
@@ -492,16 +490,13 @@ heroSports.football = {
 heroSports.cricket = {
   build() {
     const root = new THREE.Group();
-    /* realistic stump wood + red bails */
     const stumpMat = mat(0xE8D9B8, { roughness: .55, metalness: .02 });
     const bailMat = mat(0xB91C1C, { roughness: .4 });
     const stumps = new THREE.Group(); stumps.position.set(0.85, 0, 0);
-    /* three stumps — correct spacing ~0.11 scaled */
     [-0.11, 0, 0.11].forEach(z => {
       const s = M(new THREE.CylinderGeometry(0.028, 0.028, 0.82, 12), stumpMat);
       s.position.set(0, 0.41, z);
       stumps.add(s);
-      /* small top bevel */
       const top = M(new THREE.CylinderGeometry(0.032, 0.028, 0.03, 12), stumpMat);
       top.position.set(0, 0.83, z);
       stumps.add(top);
@@ -516,19 +511,16 @@ heroSports.cricket = {
     });
     root.add(stumps);
 
-    /* realistic cricket bat — English willow colour, proper proportions */
     const bat = new THREE.Group();
     bat.position.set(1.55, 0, 0.55);
     const bladeMat = mat(0xF3E4C0, { roughness: .65 });
     const blade = M(new THREE.BoxGeometry(0.105, 0.58, 0.038), bladeMat);
     blade.position.y = 0.52;
-    /* slightly rounded toe via small sphere */
     const toe = M(new THREE.SphereGeometry(0.052, 10, 8), bladeMat);
     toe.scale.set(1, 0.55, 0.75);
     toe.position.set(0, 0.23, 0);
     const handle = M(new THREE.CylinderGeometry(0.022, 0.028, 0.28, 10), mat(0x1a1a22, { roughness: .5 }));
     handle.position.y = 0.14;
-    /* rubber grip band */
     const grip = M(new THREE.CylinderGeometry(0.029, 0.029, 0.12, 10), mat(0x222230, { roughness: .8 }));
     grip.position.y = 0.12;
     bat.add(blade, toe, handle, grip);
@@ -536,7 +528,6 @@ heroSports.cricket = {
     bat.rotation.y = 0.15;
     root.add(bat);
 
-    /* red cricket ball with simple seam */
     const ball = M(new THREE.SphereGeometry(0.095, 20, 16), mat(0xC41E3A, { roughness: .4, metalness: .05 }));
     ball.position.set(-2.6, 0.22, 0.1);
     root.add(ball);
@@ -551,7 +542,7 @@ heroSports.cricket = {
       ball.position.set(-2.6, 0.22, 0.1);
       ball.rotation.x += dt * 2;
     } else if (cyc < 2.7) {
-      const u = (cyc - 1.1) / 1.6, e = u * u * (3 - 2 * u); /* smoothstep */
+      const u = (cyc - 1.1) / 1.6, e = u * u * (3 - 2 * u);
       ball.position.x = THREE.MathUtils.lerp(-2.6, 0.85, e);
       ball.position.y = THREE.MathUtils.lerp(0.85, 0.28, e);
       ball.position.z = Math.sin(u * Math.PI) * 0.12;
@@ -686,11 +677,11 @@ heroSports.pickleball = {
 /* ---------------- hero orchestration ---------------- */
 const ORDER = ['football', 'cricket', 'badminton', 'basketball', 'pickleball'];
 const SPORT_META = {
-  football:   { emoji: '⚽', name: 'Football',   tag: '5v5 · 7v7 · 11v11 on real turf', stat: '1,140 players registered', css: '#1f7a50' },
-  cricket:    { emoji: '🏏', name: 'Cricket',    tag: '6-a-side box cricket', stat: '860 players registered', css: '#c08a2d' },
-  badminton:  { emoji: '🏸', name: 'Badminton',  tag: 'Singles · Doubles · smash rally', stat: '640 players registered', css: '#6b5bd6' },
-  basketball: { emoji: '🏀', name: 'Basketball', tag: '3v3 · 5v5 streetball', stat: '470 players registered', css: '#d95b2b' },
-  pickleball: { emoji: '🎾', name: 'Pickleball', tag: 'Singles · Doubles rallies', stat: '310 players registered', css: '#1596a8' },
+  football:   { emoji: '⚽', name: 'Football',   tag: '5v5 · 7v7 · 11v11 on real turf', stat: 'Open player pool · Join the community', css: '#1f7a50' },
+  cricket:    { emoji: '🏏', name: 'Cricket',    tag: '6-a-side box cricket', stat: 'Open player pool · Join the community', css: '#c08a2d' },
+  badminton:  { emoji: '🏸', name: 'Badminton',  tag: 'Singles · Doubles · smash rally', stat: 'Open player pool · Join the community', css: '#6b5bd6' },
+  basketball: { emoji: '🏀', name: 'Basketball', tag: '3v3 · 5v5 streetball', stat: 'Open player pool · Join the community', css: '#d95b2b' },
+  pickleball: { emoji: '🎾', name: 'Pickleball', tag: 'Singles · Doubles rallies', stat: 'Open player pool · Join the community', css: '#1596a8' },
 };
 function setupAssembly(s) {
   s.pieces = [];
@@ -786,7 +777,6 @@ window.maSelect = selectSport;
    ============================================================ */
 const V3 = THREE.Vector3;
 
-/* truncated icosahedron → soccer-ball panels */
 function truncatedIcosahedron(radius) {
   const ico = new THREE.IcosahedronGeometry(1, 0);
   const pos = ico.attributes.position.array;
@@ -883,7 +873,6 @@ function buildPanelBall(radius) {
   return { group, parts };
 }
 
-/* shared stage piece — calm rounded-square court pad */
 function groundDisc(scene, color, size = 2.5) {
   const r = size * .16, half = size;
   const s = new THREE.Shape();
@@ -895,7 +884,7 @@ function groundDisc(scene, color, size = 2.5) {
   g.rotation.x = -Math.PI / 2; g.receiveShadow = true;
   scene.add(g);
 }
-/* ---------------- stage scene rig ---------------- */
+
 class StageScene {
   constructor(canvas) {
     this.canvas = canvas;
@@ -1023,7 +1012,7 @@ class StageScene {
     this.renderer.render(this.scene, this.camera);
   }
 }
-/* ================= FOOTBALL STAGE ================= */
+
 StageScene.prototype.buildFootball = function () {
   this.camPos.set(0, 1.9, 5.1); this.camLook.set(0, .85, .15);
   groundDisc(this.root, 0x3E9A63, 2.6);
@@ -1058,21 +1047,17 @@ StageScene.prototype.buildFootball = function () {
   });
 };
 
-/* ================= CRICKET STAGE ================= */
 StageScene.prototype.buildCricket = function () {
   this.camPos.set(0, 1.85, 5.2); this.camLook.set(0, 0.45, 0);
   groundDisc(this.root, 0x5FA05A, 2.6);
-  /* pitch */
   const pitch = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.05, 0.9), mat(0xc9ae7c, { roughness: 0.95 }));
   pitch.position.y = 0.025; pitch.receiveShadow = true;
   this.root.add(pitch);
-  /* crease lines */
   const creaseMat = new THREE.MeshBasicMaterial({ color: 0xefe6d2 });
   const crease = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.012, 1.05), creaseMat);
   crease.position.set(0, 0.055, 1.15); this.root.add(crease);
   const crease2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.012, 1.05), creaseMat);
   crease2.position.set(0, 0.055, -1.15); this.root.add(crease2);
-
   const stumpMat = mat(0xE8D9B8, { roughness: 0.55 });
   const stump = (x, z) => {
     const s = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.72, 12), stumpMat);
@@ -1087,7 +1072,6 @@ StageScene.prototype.buildCricket = function () {
   this.part(sL, sL.position, new V3(-0.7, 0.55, 1.15));
   this.part(sM, sM.position, new V3(0, 0.78, 1.15));
   this.part(sR, sR.position, new V3(0.7, 0.55, 1.15));
-
   const bailMat = mat(0xB91C1C, { roughness: 0.4 });
   const bail = (x) => {
     const b = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.018, 0.022), bailMat);
@@ -1098,8 +1082,6 @@ StageScene.prototype.buildCricket = function () {
   const bA = bail(-0.05), bB = bail(0.05);
   this.part(bA, bA.position, new V3(-0.05, 1.15, 1.15), { bob: 1.6, wob: 2.2 });
   this.part(bB, bB.position, new V3(0.05, 1.2, 1.15), { bob: 1.4, wob: 2.6 });
-
-  /* realistic bat */
   const bladeMat = mat(0xF3E4C0, { roughness: 0.65 });
   const blade = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.56, 0.04), bladeMat);
   blade.position.set(0.85, 0.58, -0.7); blade.rotation.z = -0.38;
@@ -1108,15 +1090,12 @@ StageScene.prototype.buildCricket = function () {
   this.root.add(blade, handle);
   this.part(blade, blade.position, new V3(0.85, 0.08, -1.25), { outRot: new V3(0, 0, -0.6), bob: 1.2 });
   this.part(handle, handle.position, new V3(0.65, 1.0, -0.7), { outRot: new V3(0, 0, -0.18), bob: 1.4 });
-
-  /* red ball */
   const ball = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 16), mat(0xC41E3A, { roughness: 0.4, metalness: 0.05 }));
   ball.position.set(-0.55, 0.11, -0.95);
   this.root.add(ball);
   this.part(ball, ball.position, new V3(-0.55, 0.7, -1.45), { bob: 1.7, wob: 1.1 });
 };
 
-/* ================= BADMINTON STAGE ================= */
 StageScene.prototype.buildBadminton = function () {
   this.camPos.set(0, 1.9, 5.0); this.camLook.set(0, .7, 0);
   groundDisc(this.root, 0x2E9E5B, 2.5);
@@ -1139,7 +1118,6 @@ StageScene.prototype.buildBadminton = function () {
   this.part(pR, pR.position, new V3(1.65, .52, 0));
   this.part(net, net.position, new V3(0, .42, -.5), { wob: .6 });
   this.part(tape, tape.position, new V3(0, 1.25, 0), { bob: 1 });
-  /* shuttle — fine: cork, feather skirt, band */
   const cork = new THREE.Mesh(new THREE.SphereGeometry(.08, 14, 12), mat(0xf3e7c4, { roughness: .5 }));
   cork.scale.set(1, .85, 1); cork.position.set(0, .74, .42);
   const skirt = new THREE.Mesh(new THREE.ConeGeometry(.2, .26, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xfafaf5, side: THREE.DoubleSide, transparent: true, opacity: .85 }));
@@ -1160,7 +1138,6 @@ StageScene.prototype.buildBadminton = function () {
   this.part(feathers, feathers.position, new V3(0, .7, .42), { outRot: new V3(0, .6, .35), wob: 1.1, bob: 1.4 });
   this.part(band, band.position, new V3(0, .2, .42), { wob: .7 });
   this.float(cork, .03, 1.1); this.float(skirt, .03, 1.1); this.float(feathers, .03, 1.1); this.float(band, .03, 1.1);
-  /* racket — oval head, strings, throat, shaft, grip */
   const rack = new THREE.Group();
   rack.position.set(.9, .42, -.6); rack.rotation.z = -.42; rack.rotation.x = .25;
   const head = new THREE.Mesh(new THREE.TorusGeometry(.235, .018, 10, 32), mat(0x6b5bd6, { roughness: .3, metalness: .5 }));
@@ -1194,7 +1171,6 @@ StageScene.prototype.buildBadminton = function () {
   this.part(cap, new V3(0, -.29, 0), new V3(0, -.7, 0), { wob: .5 });
 };
 
-/* ================= BASKETBALL STAGE ================= */
 StageScene.prototype.buildBasketball = function () {
   this.camPos.set(0, 2.5, 5.3); this.camLook.set(0, 1.25, .2);
   groundDisc(this.root, 0xC98F52, 2.5);
@@ -1227,7 +1203,6 @@ StageScene.prototype.buildBasketball = function () {
   this.part(ball, ball.position, new V3(-.32, 1.0, .05), { bob: 1.6, wob: .9 });
 };
 
-/* ================= PICKLEBALL STAGE ================= */
 StageScene.prototype.buildPickleball = function () {
   this.camPos.set(0, 1.9, 5.0); this.camLook.set(0, .6, 0);
   groundDisc(this.root, 0x1F8FB0, 2.5);
@@ -1249,7 +1224,6 @@ StageScene.prototype.buildPickleball = function () {
   this.part(pR, pR.position, new V3(1.8, .3, 0));
   this.part(net, net.position, new V3(0, .2, -.55), { wob: .7 });
   this.part(tape, tape.position, new V3(0, .95, 0), { bob: 1 });
-  /* paddle — rounded head, honeycomb face, edge guard, grip */
   const pad = new THREE.Group();
   pad.position.set(.62, .42, -.55); pad.rotation.z = -.45; pad.rotation.x = .2;
   const w = .22, h = .3, r = .06;
@@ -1279,7 +1253,6 @@ StageScene.prototype.buildPickleball = function () {
   this.part(ball, ball.position, new V3(-.6, .75, .4), { bob: 1.6, wob: 1.2 });
 };
 
-/* instantiate all stages */
 document.querySelectorAll('.stage canvas').forEach(cv => {
   try { stageRefs.push(new StageScene(cv)); } catch (err) { console.error('stage error', err); }
 });
@@ -1317,7 +1290,7 @@ function tick() {
   dampC(sceneBg, tBg.setHex(C.bg), 2.6, dt);
   dampC(sceneFog, tFog.setHex(C.bg), 2.6, dt);
   dampC(key.color, tL.setHex(C.light), 2.6, dt);
-  grassTex.offset.x += dt * .02;  /* the football ground glides slowly */
+  grassTex.offset.x += dt * .02;
   updateCamera(dt);
   if (burstT < 1) {
     burstT += dt;
@@ -1363,7 +1336,6 @@ navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
   navLinks.classList.remove('open'); burger.classList.remove('open'); burger.setAttribute('aria-expanded', 'false');
 }));
 
-/* vertical wordmark */
 const vw = document.getElementById('vword');
 'MATCHARENA'.split('').forEach((ch, i) => {
   const w = document.createElement('span');
@@ -1373,7 +1345,6 @@ const vw = document.getElementById('vword');
   vw.appendChild(w);
 });
 
-/* reveal + counters */
 const io = new IntersectionObserver(es => es.forEach(en => {
   if (en.isIntersecting) {
     en.target.classList.add('in'); io.unobserve(en.target);
@@ -1394,7 +1365,6 @@ function runCounter(el) {
   })(t0);
 }
 
-/* live games */
 const GAMES = [
   { e: '⚽', s: 'football',   t: 'Sunday Evening 7v7',    m: 'GreenTurf Arena, Gomti Nagar · Sun 6:00 PM · All levels', j: 11, c: 14 },
   { e: '⚽', s: 'football',   t: 'Weekday 5v5 Kickabout', m: 'KickOff Turf, Hazratganj · Wed 7:30 PM · Intermediate', j: 8, c: 10 },
@@ -1421,7 +1391,7 @@ function renderGames() {
       const b = ev.currentTarget;
       if (b.classList.contains('joined')) return;
       b.classList.add('joined'); b.textContent = 'Joined ✓';
-      toast('You\u2019re in the squad for ' + g.t + '. Venue details coming by WhatsApp.');
+      toast('You’re in the squad for ' + g.t + '. Venue details coming by WhatsApp.');
     });
     grid.appendChild(d);
   });
@@ -1434,14 +1404,10 @@ document.querySelectorAll('#filters .chip').forEach(ch => ch.addEventListener('c
   setTimeout(() => { renderGames(); grid.style.transition = '.4s'; grid.style.opacity = 1; grid.style.transform = 'none'; }, 200);
 }));
 
-/* toast */
 const toastEl = document.getElementById('toast');
 let toastT;
 function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 3400); }
 
-/* ============================================================
-   SPORT THEME ENGINE — clicking a sport rethemes the page
-   ============================================================ */
 function setTheme(k) {
   document.body.dataset.theme = k;
   document.querySelectorAll('.arena-btn').forEach(b => b.classList.toggle('active', b.dataset.sport === k));
@@ -1452,10 +1418,6 @@ function setTheme(k) {
 document.querySelectorAll('.arena-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.sport)));
 document.querySelectorAll('#joinChips input').forEach(inp => inp.addEventListener('change', () => { if (inp.checked) setTheme(inp.value.toLowerCase()); }));
 
-/* ============================================================
-   SPORT CLUBROOM — past matches, upcoming games, photos,
-   related arenas and a join form, shown per selected sport
-   ============================================================ */
 const SD_EMOJI = { Football: '⚽', Cricket: '🏏', Badminton: '🏸', Basketball: '🏀', Pickleball: '🎾' };
 const SPORT_DETAILS = {
   football: {
@@ -1574,16 +1536,33 @@ function renderSportDetail(k) {
     const n = form.n.value.trim(), p = form.p.value.trim();
     if (!n) return msg.textContent = 'Tell us your name.', msg.className = 'sd-msg err';
     if (!/^\d{10}$/.test(p)) return msg.textContent = 'Enter a valid 10-digit phone number.', msg.className = 'sd-msg err';
-    try { const list = JSON.parse(localStorage.getItem('ma_community') || '[]'); list.push({ name: n, phone: p, sport: form.dataset.form, at: Date.now() }); localStorage.setItem('ma_community', JSON.stringify(list)); } catch (_) { }
-    msg.textContent = 'You\u2019re in, ' + n.split(' ')[0] + '! Fixture invites go to ' + p + ' on WhatsApp.';
-    msg.className = 'sd-msg ok';
-    toast('🎉 Welcome to the ' + form.dataset.form + ' clubroom!');
-    form.reset();
+
+    // Send data to your new backend
+    fetch('https://matcharena-backend-1.onrender.com/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'join', name: n, phone: p, sport: form.dataset.form })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        msg.textContent = 'You’re in, ' + n.split(' ')[0] + '! Fixture invites go to ' + p + ' on WhatsApp.';
+        msg.className = 'sd-msg ok';
+        toast('🎉 Welcome to the ' + form.dataset.form + ' clubroom!');
+        form.reset();
+      } else {
+        msg.textContent = 'Something went wrong. Please try again.';
+        msg.className = 'sd-msg err';
+      }
+    })
+    .catch(() => {
+      msg.textContent = 'Network error. Please check your connection.';
+      msg.className = 'sd-msg err';
+    });
   });
 }
 renderSportDetail('football');
 
-/* join-community buttons on the arena cards → preselect the join form */
 document.querySelectorAll('.join-community').forEach(b => b.addEventListener('click', () => {
   const sport = b.dataset.sport;
   document.querySelectorAll('#joinChips input').forEach(inp => { inp.checked = inp.value === sport; if (inp.checked) setTheme(inp.value.toLowerCase()); });
@@ -1591,7 +1570,6 @@ document.querySelectorAll('.join-community').forEach(b => b.addEventListener('cl
   setTimeout(() => { const n = document.querySelector('#joinForm input[name=jname]'); if (n) n.focus(); }, 600);
 }));
 
-/* clicking an arena card opens its clubroom */
 document.querySelectorAll('.sport-card').forEach(card => card.addEventListener('click', e => {
   if (e.target.closest('button, a')) return;
   setTheme(card.dataset.sport);
@@ -1599,9 +1577,6 @@ document.querySelectorAll('.sport-card').forEach(card => card.addEventListener('
   if (sd) sd.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }));
 
-/* ============================================================
-   CART — nav badge, drawer, WhatsApp checkout
-   ============================================================ */
 let cart = [];
 try { cart = JSON.parse(localStorage.getItem('ma_cart') || '[]'); } catch (_) { cart = []; }
 const cartBtn = document.getElementById('cartBtn');
@@ -1633,7 +1608,7 @@ function renderCart() {
   cartItemsEl.innerHTML = html;
   cartTotalEl.textContent = '₹' + cart.reduce((s, i) => s + i.price * i.q, 0).toLocaleString('en-IN');
   const lines = cart.map(i => '- ' + i.name + ' x' + i.q + ' (₹' + (i.price * i.q).toLocaleString('en-IN') + ')').join('\n');
-  cartCheckout.setAttribute('href', 'https://wa.me/919000000000?text=' + encodeURIComponent('Hi MatchArena! I\u2019d like to order:\n' + lines + '\nTotal: ₹' + cart.reduce((s, i) => s + i.price * i.q, 0).toLocaleString('en-IN')));
+  cartCheckout.setAttribute('href', 'https://wa.me/919000000000?text=' + encodeURIComponent('Hi MatchArena! I’d like to order:\n' + lines + '\nTotal: ₹' + cart.reduce((s, i) => s + i.price * i.q, 0).toLocaleString('en-IN')));
 }
 function addCart(name, price, emoji) {
   const it = cart.find(i => i.name === name);
@@ -1668,7 +1643,6 @@ cartItemsEl.addEventListener('click', e => {
   else cart.splice(idx, 1);
   saveCart(); renderCart();
 });
-/* shop grid lives inside the drawer — visible only via cart icon or shop button */
 const SHOP_ITEMS = [
   { name: 'Football Home Kit',    price: 1499, emoji: '⚽', c1: '#1F7A50', c2: '#155C3B' },
   { name: 'Cricket Box Kit',      price: 1299, emoji: '🏏', c1: '#2B3A86', c2: '#1C2A5E' },
@@ -1711,15 +1685,28 @@ document.getElementById('joinForm').addEventListener('submit', e => {
   if (!level) return jfail(msg, 'Select your skill level.');
   if (!sports.length) return jfail(msg, 'Select at least one sport you play.');
   if (!agree) return jfail(msg, 'Please accept updates to join the community.');
-  try { const list = JSON.parse(localStorage.getItem('ma_community') || '[]'); list.push({ name, phone, email, city, level, sports, at: Date.now() }); localStorage.setItem('ma_community', JSON.stringify(list)); } catch (_) { }
-  msg.textContent = 'Welcome to the club, ' + name.split(' ')[0] + '! Your ' + sports.join(', ') + ' invites start this week in ' + city + '.';
-  msg.className = 'join-msg ok';
-  toast('🎉 You\u2019re in the community — check WhatsApp for your first invite!');
-  f.reset();
+
+  // Send data to your new backend
+  fetch('https://matcharena-backend-1.onrender.com/api/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'join', name, phone, email, city, level, sports })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      msg.textContent = 'Welcome to the club, ' + name.split(' ')[0] + '! Your ' + sports.join(', ') + ' invites start this week in ' + city + '.';
+      msg.className = 'join-msg ok';
+      toast('🎉 You’re in the community — check WhatsApp for your first invite!');
+      f.reset();
+    } else {
+      jfail(msg, 'Something went wrong. Please try again.');
+    }
+  })
+  .catch(() => jfail(msg, 'Network error. Please check your connection.'));
 });
 function jfail(msg, text) { msg.textContent = text; msg.className = 'join-msg err'; }
 
-/* sport register buttons → preselect chip */
 document.querySelectorAll('.sport-register').forEach(btn => {
   btn.addEventListener('click', () => {
     const sport = btn.dataset.sport;
@@ -1744,10 +1731,25 @@ document.getElementById('regForm').addEventListener('submit', e => {
   if (!area) return fail(msg, 'Pick the area of Lucknow closest to you.');
   if (!sportsPick.length) return fail(msg, 'Select at least one sport to play.');
   if (!agree) return fail(msg, 'Please accept the match invites to register.');
-  msg.textContent = 'You\u2019re in the draft, ' + name.split(' ')[0] + '! Playing ' + sportsPick.join(', ') + ' in ' + area + '. Our team picks you up within 24 hours.';
-  msg.className = 'form-msg ok';
-  toast('🎽 Registration sent — you\u2019re in the draft!');
-  f.reset();
+
+  // Send data to your new backend
+  fetch('https://matcharena-backend-1.onrender.com/api/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'register', name, phone, email, area, level, sports: sportsPick })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      msg.textContent = 'You’re in the draft, ' + name.split(' ')[0] + '! Playing ' + sportsPick.join(', ') + ' in ' + area + '. Our team picks you up within 24 hours.';
+      msg.className = 'form-msg ok';
+      toast('🎽 Registration sent — you’re in the draft!');
+      f.reset();
+    } else {
+      fail(msg, 'Something went wrong. Please try again.');
+    }
+  })
+  .catch(() => fail(msg, 'Network error. Please check your connection.'));
 });
 function fail(msg, text) { msg.textContent = text; msg.className = 'form-msg err'; msg.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
 
@@ -1778,10 +1780,8 @@ function closeStage() {
 }
 document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeStage));
 
-/* graceful degradation when Three.js is missing */
 if (!HAS3D) {
   document.querySelectorAll('.stage-modal, .open-stage, .arena-btn, #sportTabs, .hint-drag').forEach(el => el.remove());
 }
 
 })();
-
